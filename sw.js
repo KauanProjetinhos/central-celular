@@ -27,7 +27,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       const open = list.find((c) => c.url.startsWith(self.registration.scope))
-      return open ? open.focus() : self.clients.openWindow(url)
+      if (!open) return self.clients.openWindow(url)
+      // App já aberto: leva para a tela do aviso (ex.: Fila).
+      return open.navigate(url).then((c) => (c ?? open).focus()).catch(() => open.focus())
     })
   )
 })
